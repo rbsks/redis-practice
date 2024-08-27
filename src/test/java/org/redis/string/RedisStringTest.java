@@ -9,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.concurrent.TimeUnit;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -63,6 +65,20 @@ public class RedisStringTest {
 
         assertThat(ifPresent).isTrue();
         assertThat(stringObjectRedisTemplate.opsForValue().get(key)).isEqualTo(value);
+    }
+
+    /**
+     * <p> SETEX | PSETEX | SET key (EX, PX, EXAT, PXAT): 키값 저장 시 만료시간 설정
+     * <p> 시간 복잡도: O(1)
+     */
+    @Test
+    public void setttl() throws Exception {
+        final String key = "ttltest";
+        final String value = "ttl";
+        stringObjectRedisTemplate.opsForValue().set(key, value, 3000L, TimeUnit.MILLISECONDS);
+
+        Thread.sleep(3000L);
+        assertThat(stringObjectRedisTemplate.opsForValue().get(key)).isNull();
     }
 
     /**
