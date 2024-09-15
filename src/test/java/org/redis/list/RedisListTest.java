@@ -46,6 +46,7 @@ public class RedisListTest {
 
     /**
      * <p> LINSERT key BEFORE|AFTER pivot element
+     * <p> pivot에 해당하는 값을 기준으로 왼쪽 또는 오르른쪽에 값을 PUSH
      * <p> AFTER 옵션은 rightPush(key, pivot, value) 메서드를 통해 조작
      * <p> 시간 복잡도: O(N)
      */
@@ -56,7 +57,7 @@ public class RedisListTest {
         stringObjectRedisTemplate.opsForList().leftPush(key, "one", "three");
 
         Long size = stringObjectRedisTemplate.opsForList().size(key);
-        List<Object> objects = stringObjectRedisTemplate.opsForList().leftPop(key, size);
+        List<Object> objects = stringObjectRedisTemplate.opsForList().leftPop(key, size != null ? size : 0L);
         assertThat(objects).isNotNull();
         assertThat(objects.get(1)).isEqualTo("three");
     }
@@ -76,7 +77,7 @@ public class RedisListTest {
     /**
      * <p> LRANGE key start stop
      * <p> start = 0, stop = -1은 처음 ~ 끝 데이터를 가져옴
-     * <p> 시간 복잡도: O(S+N)
+     * <p> 시간 복잡도: O(S+N) S는 처음 또는 끝에서 start 지점까지의 오프셋 값
      */
     @Test
     public void lrange() {

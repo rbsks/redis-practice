@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.redis.config.RedisConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RedisStringTest {
 
     @Autowired
-    @Qualifier("stringObjectRedisTemplate")
     public RedisTemplate<String, Object> stringObjectRedisTemplate;
 
     /**
@@ -45,8 +43,8 @@ public class RedisStringTest {
      */
     @Test
     public void setnx() throws Exception {
-        final String key = "foo1";
-        final String value = "bar";
+        final String key = "foo111211231123112312";
+        final String value = "bar123112312";
         Boolean ifAbsent = stringObjectRedisTemplate.opsForValue().setIfAbsent(key, value);
 
         assertThat(ifAbsent).isTrue();
@@ -59,8 +57,8 @@ public class RedisStringTest {
      */
     @Test
     public void setxx() throws Exception {
-        final String key = "foo";
-        final String value = "bar2";
+        final String key = "foo12";
+        final String value = "bar2112311231";
         Boolean ifPresent = stringObjectRedisTemplate.opsForValue().setIfPresent(key, value);
 
         assertThat(ifPresent).isTrue();
