@@ -2,7 +2,7 @@ package org.redis.list;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.redis.config.RedisConfig;
+import org.redis.common.configuration.RedisConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @DataRedisTest
-@Import(RedisConfig.class)
+@Import(RedisConfiguration.class)
 public class RedisListTest {
 
     @Autowired

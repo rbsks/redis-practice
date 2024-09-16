@@ -2,12 +2,13 @@ package org.redis.string;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.redis.config.RedisConfig;
+import org.redis.common.configuration.RedisConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @Slf4j
 @DataRedisTest
-@Import(RedisConfig.class)
+@Import(RedisConfiguration.class)
 public class RedisStringTest {
 
     @Autowired
@@ -43,7 +44,7 @@ public class RedisStringTest {
      */
     @Test
     public void setnx() throws Exception {
-        final String key = "foo111211231123112312";
+        final String key = "foo111211231123112312" + UUID.randomUUID();
         final String value = "bar123112312";
         Boolean ifAbsent = stringObjectRedisTemplate.opsForValue().setIfAbsent(key, value);
 
