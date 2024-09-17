@@ -1,4 +1,4 @@
-package org.redis.common.aspect;
+package org.redis.common.aspect.redis;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,11 +8,11 @@ import java.util.concurrent.TimeUnit;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RedisCacheable {
+public @interface RedisCachePut {
 
     String cacheNames();
     String key();
-    RedisDataStructure dataStructure(); // Redis Operations 객체 동적으로 가져올 수 있게 고민해보기
+    RedisDataStructure dataStructure();
     long timeout() default -1L;
     TimeUnit timeUit() default TimeUnit.MILLISECONDS;
 }

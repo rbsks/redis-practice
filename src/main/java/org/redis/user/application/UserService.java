@@ -1,7 +1,8 @@
 package org.redis.user.application;
 
-import org.redis.common.aspect.RedisCacheable;
-import org.redis.common.aspect.RedisDataStructure;
+import org.redis.common.aspect.redis.RedisCachePut;
+import org.redis.common.aspect.redis.RedisCacheable;
+import org.redis.common.aspect.redis.RedisDataStructure;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -12,10 +13,20 @@ public class UserService {
 
     @RedisCacheable(
             cacheNames = "userIds", key = "userId",
-            dataStructure = RedisDataStructure.STRING, timeout = 10000L, timeUit = TimeUnit.MILLISECONDS
+            dataStructure = RedisDataStructure.STRING, timeout = 100000L, timeUit = TimeUnit.MILLISECONDS
     )
     public String findById(final String userId) {
         // db 조회
+        return UUID.randomUUID().toString();
+    }
+
+    @RedisCachePut(
+            cacheNames = "userIds", key = "userId",
+            dataStructure = RedisDataStructure.STRING, timeout = 100000L, timeUit = TimeUnit.MILLISECONDS
+    )
+    public String modifyUser(final String userId) {
+        // db 조회
+        // 수정
         return UUID.randomUUID().toString();
     }
 }
