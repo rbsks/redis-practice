@@ -4,6 +4,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.redis.common.aspect.redis.annotation.RedisCachePut;
+import org.redis.common.aspect.redis.annotation.RedisCacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -23,7 +25,7 @@ public class RedisCacheAspect {
         this.stringObjectRedisTemplate = stringObjectRedisTemplate;
     }
 
-    @Around(value = "@annotation(org.redis.common.aspect.redis.RedisCacheable)")
+    @Around(value = "@annotation(org.redis.common.aspect.redis.annotation.RedisCacheable)")
     public Object cacheable(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RedisCacheable redisCacheable = signature.getMethod().getAnnotation(RedisCacheable.class);
@@ -51,7 +53,7 @@ public class RedisCacheAspect {
         return methodReturnValue;
     }
 
-    @Around(value = "@annotation(org.redis.common.aspect.redis.RedisCachePut)")
+    @Around(value = "@annotation(org.redis.common.aspect.redis.annotation.RedisCachePut)")
     public Object cachePut(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RedisCachePut redisCacheput = signature.getMethod().getAnnotation(RedisCachePut.class);

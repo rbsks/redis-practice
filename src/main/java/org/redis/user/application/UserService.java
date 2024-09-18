@@ -1,7 +1,7 @@
 package org.redis.user.application;
 
-import org.redis.common.aspect.redis.RedisCachePut;
-import org.redis.common.aspect.redis.RedisCacheable;
+import org.redis.common.aspect.redis.annotation.RedisCachePut;
+import org.redis.common.aspect.redis.annotation.RedisCacheable;
 import org.redis.common.aspect.redis.RedisDataStructure;
 import org.springframework.stereotype.Service;
 
