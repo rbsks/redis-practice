@@ -1,31 +1,34 @@
-package org.redis.common.aspect.redis;
+package org.redis.common.aspect.cache;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.redis.common.aspect.redis.annotation.RedisCachePut;
-import org.redis.common.aspect.redis.annotation.RedisCacheable;
+import org.redis.common.aspect.cache.annotation.RedisCachePut;
+import org.redis.common.aspect.cache.annotation.RedisCacheable;
+import org.redis.common.aspect.cache.strategy.RedisOperationStrategy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * TODO 저장, 갱신, 삭제를 하기 위한 RedisOperationStrategy interface를 만든 후 각 자료구조마다 인터페이스를 구현
- */
 @Aspect
 @Component
 public class RedisCacheAspect {
 
     private final RedisTemplate<String, Object> stringObjectRedisTemplate;
+    private final Map<RedisDataStructure, RedisOperationStrategy> redisOperationStrategyMap;
 
-    public RedisCacheAspect(RedisTemplate<String, Object> stringObjectRedisTemplate) {
+    public RedisCacheAspect(
+            RedisTemplate<String, Object> stringObjectRedisTemplate,
+            Map<RedisDataStructure, RedisOperationStrategy> redisOperationStrategyMap) {
         this.stringObjectRedisTemplate = stringObjectRedisTemplate;
+        this.redisOperationStrategyMap = redisOperationStrategyMap;
     }
 
-    @Around(value = "@annotation(org.redis.common.aspect.redis.annotation.RedisCacheable)")
+    @Around(value = "@annotation(org.redis.common.aspect.cache.annotation.RedisCacheable)")
     public Object cacheable(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RedisCacheable redisCacheable = signature.getMethod().getAnnotation(RedisCacheable.class);
@@ -37,23 +40,19 @@ public class RedisCacheAspect {
         TimeUnit timeUnit = redisCacheable.timeUit();
         long timeout = redisCacheable.timeout();
 
-        // 키가 존재하면 TTL refresh
-        Object value = stringObjectRedisTemplate.opsForValue().getAndExpire(cacheKey, timeout, timeUnit);
+        RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheable.dataStructure());
+        Object value = redisOperationStrategy.get(stringObjectRedisTemplate, cacheKey, timeout, timeUnit);
         if (value != null) {
             return value;
         }
 
         Object methodReturnValue = joinPoint.proceed();
-
-        Boolean result = timeout < 0 ?
-                stringObjectRedisTemplate.opsForValue().setIfAbsent(cacheKey, methodReturnValue)
-                :
-                stringObjectRedisTemplate.opsForValue().setIfAbsent(cacheKey, methodReturnValue, timeout, timeUnit);
+        redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
 
         return methodReturnValue;
     }
 
-    @Around(value = "@annotation(org.redis.common.aspect.redis.annotation.RedisCachePut)")
+    @Around(value = "@annotation(org.redis.common.aspect.cache.annotation.RedisCachePut)")
     public Object cachePut(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         RedisCachePut redisCacheput = signature.getMethod().getAnnotation(RedisCachePut.class);
@@ -65,13 +64,10 @@ public class RedisCacheAspect {
         TimeUnit timeUnit = redisCacheput.timeUit();
         long timeout = redisCacheput.timeout();
 
-        Object methodReturnValue = joinPoint.proceed();
+        RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheput.dataStructure());
 
-        if (timeout < 0) {
-            stringObjectRedisTemplate.opsForValue().set(cacheKey, methodReturnValue);
-        } else {
-            stringObjectRedisTemplate.opsForValue().set(cacheKey, methodReturnValue, timeout, timeUnit);
-        }
+        Object methodReturnValue = joinPoint.proceed();
+        redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
 
         return methodReturnValue;
     }
@@ -102,4 +98,7 @@ public class RedisCacheAspect {
         return String.format("%s::%s", cacheName, key);
     }
 
+    private RedisOperationStrategy getStrategy(RedisDataStructure redisDataStructure) {
+        return redisOperationStrategyMap.get(redisDataStructure);
+    }
 }

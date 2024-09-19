@@ -1,7 +1,12 @@
 package org.redis.common.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.redis.common.aspect.cache.RedisDataStructure;
+import org.redis.common.aspect.cache.strategy.RedisOperationStrategy;
+import org.redis.common.aspect.cache.strategy.StringRedisOperationStrategy;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -18,6 +23,12 @@ import java.util.Map;
 
 @Configuration
 public class RedisConfiguration {
+
+    private final ApplicationContext applicationContext;
+
+    public RedisConfiguration(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory() {
@@ -56,5 +67,12 @@ public class RedisConfiguration {
         stringRedisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(new ObjectMapper()));
 
         return stringRedisTemplate;
+    }
+
+    @Bean
+    public Map<RedisDataStructure, RedisOperationStrategy> redisOperationStrategyMap() {
+        return Map.of(
+                RedisDataStructure.STRING, applicationContext.getBean("stringRedisOperationStrategy", StringRedisOperationStrategy.class)
+        );
     }
 }
