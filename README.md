@@ -15,7 +15,7 @@ CacheManger를 Bean으로 등록하면 위 문제를 해결할 수 있다. 하�
 하지만 매 클래스 마다 RedisTemplate을 주입 받아야하며 캐시 조회, 삭제, 업데이트 로직이 중복될 가능성이 높다. 이러한 문제는 custom annotation과 AOP의 조합으로 해결할 수 있을 거 같다.
 ## Custom Annotation을 사용하여 AOP  만들기
 
-https://github.com/rbsks/redis-practice/tree/main/src/main/java/org/redis/common/aspect/redis
+https://github.com/rbsks/redis-practice/tree/main/src/main/java/org/redis/common/aspect/cache
 
 1. @RedisCacheable
     1. 레디스에서 캐시 조회
