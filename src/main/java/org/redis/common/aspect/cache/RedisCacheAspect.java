@@ -41,13 +41,25 @@ public class RedisCacheAspect {
         long timeout = redisCacheable.timeout();
 
         RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheable.dataStructure());
-        Object value = redisOperationStrategy.get(stringObjectRedisTemplate, cacheKey, timeout, timeUnit);
+
+        Object value;
+        if (timeout > 0) {
+            value = redisOperationStrategy.getAndExpire(stringObjectRedisTemplate, cacheKey, timeout, timeUnit);
+        } else {
+            value = redisOperationStrategy.get(stringObjectRedisTemplate, cacheKey);
+        }
+
         if (value != null) {
             return value;
         }
 
         Object methodReturnValue = joinPoint.proceed();
-        redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+
+        if (timeout > 0) {
+            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+        } else {
+            redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue);
+        }
 
         return methodReturnValue;
     }
@@ -67,7 +79,12 @@ public class RedisCacheAspect {
         RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheput.dataStructure());
 
         Object methodReturnValue = joinPoint.proceed();
-        redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+
+        if (timeout > 0) {
+            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+        } else {
+            redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue);
+        }
 
         return methodReturnValue;
     }

@@ -5,10 +5,19 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.util.concurrent.TimeUnit;
 
 /**
- * TTL이 없는 Hash, List는 어떻게 추상화하지??
+ * TTL을 지원하지 않는 자료구조에서는 getAndExpire(), setWithTimeout 메서드를 오버라이드 하지 않는다.
  */
 public interface RedisOperationStrategy {
 
-    <K, V> Object get(RedisTemplate<K, V> restTemplate, K key, long timeout, TimeUnit timeUnit);
-    <K, V> void set(RedisTemplate<K, V> restTemplate, K key, V value, long timeout, TimeUnit timeUnit);
+    <K, V> Object get(RedisTemplate<K, V> restTemplate, K key);
+
+    default <K, V> Object getAndExpire(RedisTemplate<K, V> restTemplate, K key, long timeout, TimeUnit timeUnit) {
+        throw new UnsupportedOperationException("getAndExpire is not supported for this data structure.");
+    }
+
+    <K, V> void set(RedisTemplate<K, V> restTemplate, K key, V value);
+
+    default <K, V> void setWithTimeout(RedisTemplate<K, V> restTemplate, K key, V value, long timeout, TimeUnit timeUnit) {
+        throw new UnsupportedOperationException("setWithTimeout is not supported for this data structure.");
+    }
 }

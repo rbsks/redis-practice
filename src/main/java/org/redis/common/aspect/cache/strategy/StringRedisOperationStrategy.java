@@ -11,9 +11,18 @@ import java.util.concurrent.TimeUnit;
 public class StringRedisOperationStrategy implements RedisOperationStrategy {
 
     @Override
-    public <K, V> Object get(RedisTemplate<K, V> restTemplate, K key, long timeout, TimeUnit timeUnit) {
+    public <K, V> Object get(RedisTemplate<K, V> restTemplate, K key) {
         try {
-            // 키가 존재하면 TTL refresh 후 조회
+            return restTemplate.opsForValue().get(key);
+        } catch (Exception e) {
+            log.error("Failed redis cache lookup", e);
+            return null;
+        }
+    }
+
+    @Override
+    public <K, V> Object getAndExpire(RedisTemplate<K, V> restTemplate, K key, long timeout, TimeUnit timeUnit) {
+        try {
             return restTemplate.opsForValue().getAndExpire(key, timeout, timeUnit);
         } catch (Exception e) {
             log.error("Failed redis cache lookup", e);
@@ -22,13 +31,18 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
     }
 
     @Override
-    public <K, V> void set(RedisTemplate<K, V> restTemplate, K key, V value, long timeout, TimeUnit timeUnit) {
+    public <K, V> void set(RedisTemplate<K, V> restTemplate, K key, V value) {
         try {
-            if (timeout < 0) {
-                restTemplate.opsForValue().set(key, value);
-            } else {
-                restTemplate.opsForValue().set(key, value, timeout, timeUnit);
-            }
+            restTemplate.opsForValue().set(key, value);
+        } catch (Exception e) {
+            log.error("Failed to save redis cache", e);
+        }
+    }
+
+    @Override
+    public <K, V> void setWithTimeout(RedisTemplate<K, V> restTemplate, K key, V value, long timeout, TimeUnit timeUnit) {
+        try {
+            restTemplate.opsForValue().set(key, value, timeout, timeUnit);
         } catch (Exception e) {
             log.error("Failed to save redis cache", e);
         }
