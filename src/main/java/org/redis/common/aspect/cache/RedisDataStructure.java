@@ -1,4 +1,4 @@
-package org.redis.common.aspect.redis;
+package org.redis.common.aspect.cache;
 
 public enum RedisDataStructure {
     STRING,

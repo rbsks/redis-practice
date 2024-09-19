@@ -1,6 +1,6 @@
-package org.redis.common.aspect.redis.annotation;
+package org.redis.common.aspect.cache.annotation;
 
-import org.redis.common.aspect.redis.RedisDataStructure;
+import org.redis.common.aspect.cache.RedisDataStructure;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RedisCacheable {
+public @interface RedisCachePut {
 
     String cacheNames();
     String key();
