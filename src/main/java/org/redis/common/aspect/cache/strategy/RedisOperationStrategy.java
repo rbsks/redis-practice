@@ -5,7 +5,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import java.util.concurrent.TimeUnit;
 
 /**
- * TTL을 지원하지 않는 자료구조에서는 getAndExpire(), setWithTimeout 메서드를 오버라이드 하지 않는다.
+ * TTL을 지원이 미흡한 자료구조에서는 getAndExpire(), setWithTimeout 메서드를 오버라이드 하지 않는다.
+ * 또는 redisTemplate execute를 사용해서 명령어를 직접 실행한다.
  */
 public interface RedisOperationStrategy {
 
