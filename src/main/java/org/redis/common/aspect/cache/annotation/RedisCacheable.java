@@ -8,12 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.concurrent.TimeUnit;
 
+
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RedisCacheable {
 
     String cacheNames();
     String key();
+    String filed() default "";
     RedisDataStructure dataStructure();
     long timeout() default -1L;
     TimeUnit timeUit() default TimeUnit.MILLISECONDS;

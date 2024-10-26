@@ -1,11 +1,13 @@
 package org.redis.common.aspect.cache;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redis.common.aspect.cache.annotation.RedisCachePut;
 import org.redis.common.aspect.cache.annotation.RedisCacheable;
+import org.redis.common.aspect.cache.strategy.RedisCacheInfo;
 import org.redis.common.aspect.cache.strategy.RedisOperationStrategy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import org.springframework.util.StringUtils;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Aspect
 @Component
 public class RedisCacheAspect {
@@ -35,18 +38,19 @@ public class RedisCacheAspect {
 
         validationMetaData(redisCacheable.cacheNames(), redisCacheable.key());
 
-        String cacheKey =
-                generateCacheKey(redisCacheable.cacheNames(), getKey(joinPoint.getArgs(), signature.getParameterNames(), redisCacheable.key()));
-        TimeUnit timeUnit = redisCacheable.timeUit();
-        long timeout = redisCacheable.timeout();
-
-        RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheable.dataStructure());
+        RedisCacheInfo withoutFieldAndValueInfo = RedisCacheInfo.createWithoutFieldAndValue(
+                redisCacheable.cacheNames(), redisCacheable.key(), redisCacheable.dataStructure(),
+                redisCacheable.timeout(), redisCacheable.timeUit(),
+                joinPoint.getArgs(), signature.getParameterNames()
+        );
 
         Object value;
+        long timeout = redisCacheable.timeout();
+        RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheable.dataStructure());
         if (timeout > 0) {
-            value = redisOperationStrategy.getAndExpire(stringObjectRedisTemplate, cacheKey, timeout, timeUnit);
+            value = redisOperationStrategy.getAndExpire(stringObjectRedisTemplate, withoutFieldAndValueInfo);
         } else {
-            value = redisOperationStrategy.get(stringObjectRedisTemplate, cacheKey);
+            value = redisOperationStrategy.get(stringObjectRedisTemplate, withoutFieldAndValueInfo);
         }
 
         if (value != null) {
@@ -55,10 +59,16 @@ public class RedisCacheAspect {
 
         Object methodReturnValue = joinPoint.proceed();
 
+        RedisCacheInfo withoutFieldInfo = RedisCacheInfo.createWithoutField(
+                redisCacheable.cacheNames(), redisCacheable.key(), methodReturnValue,
+                redisCacheable.dataStructure(), redisCacheable.timeout(), redisCacheable.timeUit(),
+                joinPoint.getArgs(), signature.getParameterNames()
+        );
+
         if (timeout > 0) {
-            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, withoutFieldInfo);
         } else {
-            redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue);
+            redisOperationStrategy.set(stringObjectRedisTemplate, withoutFieldInfo);
         }
 
         return methodReturnValue;
@@ -71,8 +81,6 @@ public class RedisCacheAspect {
 
         validationMetaData(redisCacheput.cacheNames(), redisCacheput.key());
 
-        String cacheKey = 
-                generateCacheKey(redisCacheput.cacheNames(), getKey(joinPoint.getArgs(), signature.getParameterNames(), redisCacheput.key()));
         TimeUnit timeUnit = redisCacheput.timeUit();
         long timeout = redisCacheput.timeout();
 
@@ -80,10 +88,16 @@ public class RedisCacheAspect {
 
         Object methodReturnValue = joinPoint.proceed();
 
+        RedisCacheInfo withoutFieldInfo = RedisCacheInfo.createWithoutField(
+                redisCacheput.cacheNames(), redisCacheput.key(), methodReturnValue,
+                redisCacheput.dataStructure(), redisCacheput.timeout(), redisCacheput.timeUit(),
+                joinPoint.getArgs(), signature.getParameterNames()
+        );
+
         if (timeout > 0) {
-            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, cacheKey, methodReturnValue, timeout, timeUnit);
+            redisOperationStrategy.setWithTimeout(stringObjectRedisTemplate, withoutFieldInfo);
         } else {
-            redisOperationStrategy.set(stringObjectRedisTemplate, cacheKey, methodReturnValue);
+            redisOperationStrategy.set(stringObjectRedisTemplate, withoutFieldInfo);
         }
 
         return methodReturnValue;
@@ -97,22 +111,6 @@ public class RedisCacheAspect {
         if (!StringUtils.hasText(key)) {
             throw new NullPointerException("Key cannot be null or empty");
         }
-    }
-
-    private String getKey(Object[] args, String[] parameterNames, String metaKey) {
-        String key;
-        for (int i = 0; i < parameterNames.length; i++) {
-            if (parameterNames[i].equals(metaKey)) {
-                key = (String) args[i];
-                return key;
-            }
-        }
-
-        throw new IllegalArgumentException("Cannot find matching parameter for key: " + metaKey);
-    }
-
-    private String generateCacheKey(String cacheName, String key) {
-        return String.format("%s::%s", cacheName, key);
     }
 
     private RedisOperationStrategy getStrategy(RedisDataStructure redisDataStructure) {

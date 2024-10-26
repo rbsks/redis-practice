@@ -14,6 +14,7 @@ public @interface RedisCachePut {
 
     String cacheNames();
     String key();
+    String filed() default "";
     RedisDataStructure dataStructure();
     long timeout() default -1L;
     TimeUnit timeUit() default TimeUnit.MILLISECONDS;

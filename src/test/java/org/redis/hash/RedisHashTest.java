@@ -1,10 +1,19 @@
 package org.redis.hash;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
+import org.redis.common.aspect.cache.strategy.RedisOperationStrategy;
+import org.redis.common.aspect.cache.strategy.StringRedisOperationStrategy;
 import org.redis.common.configuration.RedisConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,12 +28,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p> Hash형은 {@link org.springframework.data.redis.core.HashOperations}을 사용하여 값을 조작한다
  */
 @Slf4j
-@DataRedisTest
-@Import(RedisConfiguration.class)
+@SpringBootTest
+//@DataRedisTest
+//@Import({
+//        RedisConfiguration.class,
+//        RedisOperationStrategy.class,
+//        StringRedisOperationStrategy.class
+//})
 public class RedisHashTest {
 
     @Autowired
     public RedisTemplate<String, Object> stringObjectRedisTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * <p> 1. HSET key field [field value ...]
@@ -36,17 +52,19 @@ public class RedisHashTest {
     @Test
     public void hget() throws Exception {
         final String key = "users";
-        final String field = "rbsks147@thinkfree";
+        final String field = "rbsks147@thinkfree.com";
         Map<String, String> value =
                 Map.of("name", "gyubin", "age", "31", "phone", "01040463138");
 
         // HSET
-        HashOperations<String, String, Map<String, String>> stringObjectObjectHashOperations = stringObjectRedisTemplate.opsForHash();
-        stringObjectObjectHashOperations.put(key, field, value);
+        HashOperations<String, String, String> stringObjectObjectHashOperations = stringObjectRedisTemplate.opsForHash();
+        stringObjectObjectHashOperations.put(key, field, objectMapper.writeValueAsString(value));
 
         // 해시 키에 지정한 필드값 가져오기
-        Map<String, String> user = Optional.ofNullable(stringObjectObjectHashOperations.get(key, field))
+        String userStr = Optional.ofNullable(stringObjectObjectHashOperations.get(key, field))
                 .orElseThrow(() -> new IllegalArgumentException("not found user"));
+
+        Map<String, String> user = objectMapper.readValue(userStr, new TypeReference<Map<String, String>>() {});
 
         assertThat(user.get("name")).isEqualTo("gyubin");
         assertThat(user.get("age")).isEqualTo("31");
@@ -110,5 +128,26 @@ public class RedisHashTest {
         Long increment = stringObjectRedisTemplate.opsForHash().increment(key, field, 1L);
 
         assertThat(increment).isEqualTo(7L);
+    }
+
+    @Test
+    public void hsetAndGet() throws Exception {
+        final String key = "users";
+        final String field = "rbsks147@gmail.com";
+        User value = new User("gyubin", 31, "rbsks147@gmail.com");
+
+        // HSET
+        HashOperations<String, String, User> stringObjectObjectHashOperations = stringObjectRedisTemplate.opsForHash();
+        stringObjectObjectHashOperations.put(key, field, value);
+
+        // 해시 키에 지정한 필드값 가져오기
+        Object user = Optional.ofNullable(stringObjectObjectHashOperations.get(key, field))
+                .orElseThrow(() -> new IllegalArgumentException("not found user"));
+
+        log.info("tset");
+    }
+
+    public record User(String name, int age, String email) {
+
     }
 }

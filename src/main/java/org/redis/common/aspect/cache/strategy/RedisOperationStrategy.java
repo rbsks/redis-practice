@@ -2,23 +2,33 @@ package org.redis.common.aspect.cache.strategy;
 
 import org.springframework.data.redis.core.RedisTemplate;
 
-import java.util.concurrent.TimeUnit;
-
-/**
- * TTL을 지원이 미흡한 자료구조에서는 getAndExpire(), setWithTimeout 메서드를 오버라이드 하지 않는다.
- * 또는 redisTemplate execute를 사용해서 명령어를 직접 실행한다.
- */
 public interface RedisOperationStrategy {
 
-    <K, V> Object get(RedisTemplate<K, V> restTemplate, K key);
+    <K, V> Object get(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo);
 
-    default <K, V> Object getAndExpire(RedisTemplate<K, V> restTemplate, K key, long timeout, TimeUnit timeUnit) {
-        throw new UnsupportedOperationException("getAndExpire is not supported for this data structure.");
+    <K, V> Object getAndExpire(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo);
+
+    <K, V> void set(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo);
+
+    <K, V> void setWithTimeout(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo);
+
+    default String getKey(Object[] args, String[] parameterNames, String metaKey) {
+        for (int i = 0; i < parameterNames.length; i++) {
+            if (parameterNames[i].equals(metaKey)) {
+                return (String) args[i];
+            }
+        }
+
+        throw new IllegalArgumentException("Cannot find matching parameter for key: " + metaKey);
     }
 
-    <K, V> void set(RedisTemplate<K, V> restTemplate, K key, V value);
+    default String generateCacheKey(String cacheName, String key) {
+        return String.format("%s::%s", cacheName, key);
+    }
 
-    default <K, V> void setWithTimeout(RedisTemplate<K, V> restTemplate, K key, V value, long timeout, TimeUnit timeUnit) {
-        throw new UnsupportedOperationException("setWithTimeout is not supported for this data structure.");
+    default void typeCheck(Class<?> type, Class<?> target) {
+        if (type.isInstance(target)) {
+            throw new ClassCastException("Cannot cast " + target.getName() + " to " + type.getName());
+        }
     }
 }

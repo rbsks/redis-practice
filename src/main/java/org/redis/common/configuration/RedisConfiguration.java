@@ -64,7 +64,7 @@ public class RedisConfiguration {
         stringRedisTemplate.setKeySerializer(new StringRedisSerializer());
         stringRedisTemplate.setValueSerializer(new StringRedisSerializer());
         stringRedisTemplate.setHashKeySerializer(new StringRedisSerializer());
-        stringRedisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer(new ObjectMapper()));
+        stringRedisTemplate.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
 
         return stringRedisTemplate;
     }
