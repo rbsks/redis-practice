@@ -16,7 +16,7 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey.getClass());
+            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
 
             return redisTemplate.opsForValue().get(cacheKey);
         } catch (Exception e) {
@@ -31,7 +31,7 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey.getClass());
+            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
 
             TimeUnit timeUnit = redisCacheInfo.timeUnit();
             long timeout = redisCacheInfo.timeout();
@@ -49,8 +49,8 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey.getClass());
-            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value().getClass());
+            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
+            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value());
 
             redisTemplate.opsForValue().set((K) cacheKey, (V) redisCacheInfo.value());
         } catch (Exception e) {
@@ -64,8 +64,8 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey.getClass());
-            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value().getClass());
+            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
+            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value());
 
             TimeUnit timeUnit = redisCacheInfo.timeUnit();
             long timeout = redisCacheInfo.timeout();

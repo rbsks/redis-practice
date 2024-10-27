@@ -26,9 +26,9 @@ public interface RedisOperationStrategy {
         return String.format("%s::%s", cacheName, key);
     }
 
-    default void typeCheck(Class<?> type, Class<?> target) {
-        if (type.isInstance(target)) {
-            throw new ClassCastException("Cannot cast " + target.getName() + " to " + type.getName());
+    default void typeCheck(Class<?> type, Object target) {
+        if (!type.isInstance(target)) {
+            throw new ClassCastException("Cannot cast " + target.getClass().getName() + " to " + type.getName());
         }
     }
 }
