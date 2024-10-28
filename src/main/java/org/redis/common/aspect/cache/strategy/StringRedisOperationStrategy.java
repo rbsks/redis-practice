@@ -16,7 +16,7 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
+            assertCastable(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
 
             return redisTemplate.opsForValue().get(cacheKey);
         } catch (Exception e) {
@@ -26,12 +26,13 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <K, V> Object getAndExpire(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo) {
         try {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
+            assertCastable(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
 
             TimeUnit timeUnit = redisCacheInfo.timeUnit();
             long timeout = redisCacheInfo.timeout();
@@ -44,13 +45,13 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <K, V> void set(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo) {
         try {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
-            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value());
+            assertCastable(redisTemplate.getKeySerializer().getTargetType(), cacheKey, redisCacheInfo.value());
 
             redisTemplate.opsForValue().set((K) cacheKey, (V) redisCacheInfo.value());
         } catch (Exception e) {
@@ -59,13 +60,13 @@ public class StringRedisOperationStrategy implements RedisOperationStrategy {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <K, V> void setWithTimeout(RedisTemplate<K, V> redisTemplate, RedisCacheInfo redisCacheInfo) {
         try {
             String key = getKey(redisCacheInfo.args(), redisCacheInfo.parameterNames(), redisCacheInfo.key());
             String cacheKey = generateCacheKey(redisCacheInfo.cacheNames(), key);
 
-            typeCheck(redisTemplate.getKeySerializer().getTargetType(), cacheKey);
-            typeCheck(redisTemplate.getValueSerializer().getTargetType(), redisCacheInfo.value());
+            assertCastable(redisTemplate.getKeySerializer().getTargetType(), cacheKey, redisCacheInfo.value());
 
             TimeUnit timeUnit = redisCacheInfo.timeUnit();
             long timeout = redisCacheInfo.timeout();

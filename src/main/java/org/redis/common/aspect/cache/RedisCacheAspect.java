@@ -81,7 +81,6 @@ public class RedisCacheAspect {
 
         validationMetaData(redisCacheput.cacheNames(), redisCacheput.key());
 
-        TimeUnit timeUnit = redisCacheput.timeUit();
         long timeout = redisCacheput.timeout();
 
         RedisOperationStrategy redisOperationStrategy = getStrategy(redisCacheput.dataStructure());
